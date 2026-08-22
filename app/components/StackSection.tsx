@@ -6,53 +6,47 @@ import Link from "next/link";
 import {
   useMotionValueEvent,
   useScroll,
-  useTransform,
   type MotionValue,
 } from "framer-motion";
-import { useReducedMotionSafe } from "../lib/useReducedMotionSafe";
 import Aperture from "./Aperture";
 import RevealText from "./RevealText";
 import { useScrollContext } from "../context/ScrollContext";
-import { APERTURE_SHUT, APERTURE_STEPS } from "../lib/motion";
+import { TRACK_VH, intoOpening, useApertureScrub } from "../lib/arrival";
 
 /**
- * How much scrolling the section asks for, in viewport heights, and how it is
- * spent.
- *
- * This is the pace control for the whole arrival. The transition is scrubbed by
- * scroll *position*, so its speed is set by distance — not by any duration —
- * and it used to have exactly one viewport to play across, because a section was
- * one viewport tall and that was all the travel there was. On a wheel that read
- * as deliberate, since one notch moves a tenth of a screen. Under a thumb it was
- * over in a flick.
- *
- * `RIDE` is not a free choice: the plate has to cross one screen to arrive, and
- * the layout fixes that. So the room has to be bought for the part that was
- * actually being skipped — the opening — which is why the plate now pins on
- * arrival and the panel comes away against a still frame.
+ * The pacing of the arrival — how far the plate rides, how long it holds, how
+ * much scroll the opening gets — lives in `lib/arrival` now, because the
+ * channel at the foot of the page arrives with the same gesture and has to
+ * arrive at the same speed.
  */
-const RIDE_VH = 1;
+
 /**
- * The beat between the plate landing and the panel starting to go.
+ * The plate's button.
  *
- * It also has to absorb a discrepancy: the track is measured in `svh` and the
- * plate in `dvh`, so the plate pins slightly later in the scrub when a mobile
- * browser has hidden its toolbar — 0.49 of the way along with the toolbar out,
- * a couple of points further without it, against an opening that starts at 0.56.
- * The beat has to be longer than that drift or the panel would begin opening
- * while the plate was still travelling. `tests/scroll-pacing.mjs` measures both
- * points and checks they are still in that order.
+ * A filled button, not an outline. The outlined version was legible only once
+ * you found it — it read as a border drawn over a photo until you hovered, and
+ * on touch there is no hover at all.
+ *
+ * Brass, not ink. Ink was the same green as the panel that had just opened and
+ * as the header mark, so on a pale plate the button read as more of the
+ * furniture. Brass is the one warm colour in the system and the only thing on a
+ * plate wearing it, which is what makes it the thing to press. Hover deepens
+ * rather than lightens — see --color-brass-deep for why that direction is the
+ * only one available.
+ *
+ * The box grew faster than the label: roughly a third more padding against a
+ * couple of points of type, because what was wanted was presence rather than a
+ * louder word. Radius is up from 6px — softened further, still not a pill; a
+ * fully round end would read as a web button rather than a plate. The bone
+ * outline is what lifts the fill off the photograph.
+ *
+ * A module constant because two elements wear it: an internal route renders as
+ * a `Link` and an off-site destination as a plain anchor, and the two must be
+ * indistinguishable. Colours live in classes, not inline styles, so the hover
+ * fill can actually override them.
  */
-const HOLD_VH = 0.15;
-/** Scroll given to the three-stage opening itself. */
-const OPEN_VH = 0.9;
-const TRACK_VH = RIDE_VH + HOLD_VH + OPEN_VH;
-
-/** Where in the scrub the panel begins to come away. */
-const OPEN_AT = (RIDE_VH + HOLD_VH) / TRACK_VH;
-
-/** Place a fraction of the opening on the section's own 0–1 scrub. */
-const intoOpening = (t: number) => OPEN_AT + t * (1 - OPEN_AT);
+const CTA_CLASS =
+  "pointer-events-auto inline-block rounded-[14px] border-2 border-[var(--color-bone)] bg-[var(--color-brass)] px-[34px] py-[19px] font-[family-name:var(--font-body)] text-[20px] md:text-[17px] font-extrabold uppercase tracking-[0.2em] text-[var(--color-paper)] hover:bg-[var(--color-brass-deep)]";
 
 /**
  * Each section pins at the top of the viewport and the *next* one arrives over
@@ -78,6 +72,7 @@ export default function StackSection({
   external,
   cta,
   panel,
+  focus = "top",
   progressMV,
   nextProgressMV,
 }: {
@@ -90,10 +85,21 @@ export default function StackSection({
   /** Omit for a plate that is not itself a destination. */
   href?: string;
   external?: boolean;
-  /** An explicit button on the plate, for sections that need a stated action. */
-  cta?: { label: string; href: string };
+  /**
+   * An explicit button on the plate, for sections that need a stated action.
+   * `external` sends it off-site in a new tab, the same way `href`/`external`
+   * do for a whole-plate link.
+   */
+  cta?: { label: string; href: string; external?: boolean };
   /** Which half of the two-tone system this section arrives on. */
   panel: "ink" | "paper";
+  /**
+   * Where the crop holds when a portrait still is poured into a landscape
+   * plate. Defaults to the top, which is what a standing figure shot close
+   * usually wants; `center` is for a still that has its subject further down the
+   * frame with something above them worth keeping.
+   */
+  focus?: "top" | "center";
   progressMV: MotionValue<number>;
   nextProgressMV: MotionValue<number>;
 }) {
@@ -137,33 +143,25 @@ export default function StackSection({
     };
   }, [scrollYProgress, nextProgressMV]);
 
-  // The loader's three-step opening, scrubbed by scroll instead of a clock:
-  // held shut while the panel rides up, then the hole widens sideways into a
-  // letterbox, then it opens out. Scrolling back up closes it the same way.
-  //
-  // Reduced motion pins the panel open, so sections simply stack without the
-  // masked reveal riding the scroll.
-  // The stops come straight from APERTURE_STEPS now, remapped onto the part of
-  // the scrub that happens after the plate has landed, with one extra stop in
-  // front holding the panel shut through the ride-up. They used to be written out
-  // by hand and had drifted a little off the shared numbers; deriving them is
-  // what makes "the loader and the scroll are the same animation" literally true.
-  const reduce = useReducedMotionSafe();
-  const frames = [0, ...APERTURE_STEPS.t.map(intoOpening)];
-  const shut = frames.map(() => 0);
-  const sx = useTransform(
-    scrollYProgress,
-    frames,
-    reduce ? shut : [APERTURE_SHUT, ...APERTURE_STEPS.x],
-  );
-  const sy = useTransform(
-    scrollYProgress,
-    frames,
-    reduce ? shut : [APERTURE_SHUT, ...APERTURE_STEPS.y],
-  );
+  const { sx, sy } = useApertureScrub(scrollYProgress);
 
   const panelColor =
     panel === "ink" ? "var(--color-ink)" : "var(--color-paper)";
+
+  // The part of the button's styling that moves. Kept out of CTA_CLASS because
+  // it depends on the reveal, and shared so the internal and off-site renders
+  // below cannot drift apart.
+  const ctaStyle: React.CSSProperties = {
+    // Opens with the panel rather than sitting there through the arrival, so
+    // the plate reads before the action does.
+    opacity: metaOn ? 1 : 0,
+    transform: metaOn ? "translateY(0)" : "translateY(12px)",
+    // Static, not animated — a box-shadow keyframe would repaint on the main
+    // thread every frame.
+    boxShadow: "0 2px 12px color-mix(in srgb, #000 22%, transparent)",
+    transition:
+      "opacity 700ms cubic-bezier(0.19,1,0.22,1) 200ms, transform 700ms cubic-bezier(0.19,1,0.22,1) 200ms, background-color 300ms",
+  };
 
   const plate = (
     <>
@@ -183,10 +181,19 @@ export default function StackSection({
           alt=""
           fill
           sizes="100vw"
-          // A portrait shot inside a full-bleed landscape plate — biasing the
-          // crop toward the top keeps her in frame instead of centering on
-          // her torso on wide screens.
-          className="object-cover object-top"
+          // A portrait still inside a plate that is landscape on a desktop and
+          // portrait on a phone, so one of the two always crops hard and which
+          // end it keeps has to be a per-section choice.
+          //
+          // Top is the default and what a studio shot of a standing figure
+          // wants: on a wide screen a centred crop lands on her torso and takes
+          // her face off the top of the frame. A still with headroom — sky above
+          // her, the subject sitting lower — wants the opposite, because
+          // holding the top there fills the plate with empty sky and drops the
+          // title straight onto her face.
+          className={`object-cover ${
+            focus === "center" ? "object-center" : "object-top"
+          }`}
         />
       )}
 
@@ -201,60 +208,56 @@ export default function StackSection({
         />
       </div>
 
-      {/* title, and the action under it when there is one */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-[4dvh] px-6 text-center pointer-events-none">
+      {/* The title, and the action directly under it when there is one.
+          One group, centred as a group: the button belongs to the title and has
+          to read that way, so the gap between them is a little over two
+          viewport-hundredths and nothing else sits between. It used to be four
+          plus a margin, which left enough air on a tall screen that the button
+          looked like a separate thing further down the plate rather than the
+          next line of the same thought. */}
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-[2.2dvh] px-6 text-center pointer-events-none">
         <RevealText
-          as="h3"
+          as="h2"
           text={title}
           trigger={titleOn}
           className="font-[family-name:var(--font-body)] font-semibold uppercase text-[9vw] md:text-[5.5vw] leading-[0.95] tracking-[-0.02em]"
           style={{ color: "var(--color-paper)" }}
         />
 
-        {cta && (
-          <Link
-            href={cta.href}
-            // The plate itself is not a link here, so this is the only live
-            // target — it has to take its pointer events back from the wrapper.
-            // Colours live in classes, not inline styles, so the hover fill can
-            // actually override them.
-            // A filled button, not an outline. The outlined version was legible
-            // only once you found it — it read as a border drawn over a photo
-            // until you hovered, and on touch there is no hover at all. Solid
-            // ink on this light plate carries its own contrast, so it reads as a
-            // button before anything is pointed at it.
-            //
-            // `mt` sits it just below the title, a little tighter than the
-            // column gap alone. Radius is deliberately small — softened, not
-            // round. The bone outline is what lifts the fill off the photograph.
-            // The box is the previous one × 1.04 on both axes, measured rather
-            // than assumed. Type scales too, so the label grows with the button
-            // instead of drifting inside it. The padding carries slightly more
-            // than 4% because the 2px border does not scale — 2.08px is not
-            // something a screen can draw — so it has to absorb that remainder
-            // for the outer box to land on 4%.
-            className="pointer-events-auto mt-[1.5dvh] inline-block rounded-[6px] border-2 border-[var(--color-bone)] bg-[var(--color-ink)] px-[25.4px] py-[14.9px] font-[family-name:var(--font-body)] text-[18.5px] md:text-[15.6px] font-extrabold uppercase tracking-[0.2em] text-[var(--color-paper)] hover:bg-[var(--color-brass)]"
-            style={{
-              // Opens with the panel rather than sitting there through the
-              // arrival, so the plate reads before the action does.
-              opacity: metaOn ? 1 : 0,
-              transform: metaOn ? "translateY(0)" : "translateY(12px)",
-              // Static, not animated — a box-shadow keyframe would repaint on
-              // the main thread every frame.
-              boxShadow: "0 2px 12px color-mix(in srgb, #000 22%, transparent)",
-              transition:
-                "opacity 700ms cubic-bezier(0.19,1,0.22,1) 200ms, transform 700ms cubic-bezier(0.19,1,0.22,1) 200ms, background-color 300ms",
-            }}
-          >
-            {cta.label}
-          </Link>
-        )}
+        {cta &&
+          // The plate itself is not a link here, so the button is the only live
+          // target — it has to take its pointer events back from the wrapper.
+          //
+          // Off-site goes through a plain anchor rather than a `Link`.
+          // next/link is for prefetching and client-navigating a route inside
+          // this app, and neither applies to YouTube; a bare anchor is also the
+          // one thing that reliably survives Instagram's in-app browser, which
+          // is where much of this traffic arrives from. New tab, because unlike
+          // the members route this is not where the site ends — there is still
+          // something here to come back to.
+          (cta.external ? (
+            <a
+              href={cta.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={CTA_CLASS}
+              style={ctaStyle}
+            >
+              {cta.label}
+            </a>
+          ) : (
+            <Link href={cta.href} className={CTA_CLASS} style={ctaStyle}>
+              {cta.label}
+            </Link>
+          ))}
       </div>
 
       {/* subtitle */}
       <div className="absolute bottom-[8dvh] left-0 right-0 z-10 flex justify-center px-6 pointer-events-none">
         <RevealText
-          as="h4"
+          // A tagline under the title, not a section of its own — it was an
+          // `h4`, which put a heading in the outline for a line of prose.
+          as="p"
           text={subtitle}
           trigger={metaOn}
           delay={0.1}

@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { motionValue } from "framer-motion";
+import ChannelSection from "./components/ChannelSection";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Loader from "./components/Loader";
@@ -9,15 +11,18 @@ import StackSection from "./components/StackSection";
 import { ScrollProvider } from "./context/ScrollContext";
 import { asset } from "./lib/asset";
 
-// One plate, arriving on the ink half of the two-tone system over the hero's
-// footage. The page is now the shortest it can be and still have somewhere to
-// go: the footage, then the way in.
+// One pinned plate over the hero's footage, and then the channel.
 //
-// The panel used to be paper, which meant the one solid sheet the visitor sees
-// on the way in was off-white — the only place on the site where the ground was
-// not the brand green. Ink puts the arrival on the same green as the loading
-// screen it followed, and the header's `mix-blend-difference` mark inverts to
-// pale over it without needing anything said here.
+// The archive is a plate because a plate is what it needs: the thing behind it
+// is paid, so what the page can show of it is a photograph and an invitation.
+// The channel is the opposite — the work is public, and the honest way to
+// present work you can actually watch is to put it on the page. So it is not a
+// plate at all. See `ChannelSection`, which scrolls up over this stack and ends
+// the page.
+//
+// Order is scroll order: the paid archive is what the site is for, so it comes
+// first, and the channel sits under it as the thing to do if the answer to the
+// first plate was no.
 const sections = [
   {
     // Explicit, not derived from the title — the title is two words now, and
@@ -38,6 +43,14 @@ const sections = [
 function HomeContent() {
   const [ready, setReady] = useState(false);
 
+  // Whether the channel has taken the top of the screen. The wordmark is fixed
+  // and centred over everything, which is right over full-bleed footage and
+  // wrong over a section that sets its own type up there — so the channel says
+  // when it has arrived and the header gets out of the way. Held here rather
+  // than in either component because it is the one fact both of them need and
+  // neither owns.
+  const [channelHasScreen, setChannelHasScreen] = useState(false);
+
   // Where the loading reel's footage had got to as the panel came away, so the
   // hero continues it rather than restarting it. Null until the hand-off, which is
   // also the hero's cue to start playing at all.
@@ -56,8 +69,18 @@ function HomeContent() {
   return (
     <>
       <Loader onDone={() => setReady(true)} onHandoff={setHandoffAt} />
-      <Header ready={ready} />
+      <Header ready={ready} retracted={channelHasScreen} />
       <main className="relative">
+        {/* The page had no `h1` at all — its outline started at the first
+            plate's title, and the one thing that names the site is a wordmark
+            painted through a CSS mask, which carries no text. Visually hidden
+            because the design says this with the mark rather than with type;
+            hidden from sight is not hidden from a screen reader, a search
+            result, or a link preview. */}
+        <h1 className="sr-only">
+          yrsaclicks — adventure photographer and model
+        </h1>
+
         {/* One stacking context: every child pins at top:0 and the next
             one is painted over it, so earlier pages stay put underneath. */}
         <div className="relative">
@@ -73,6 +96,14 @@ function HomeContent() {
             />
           ))}
         </div>
+
+        {/* Outside the pinned stack, not in it — see `ChannelSection`. */}
+        <ChannelSection onTakesScreen={setChannelHasScreen} />
+
+        {/* Already written, and until now never rendered anywhere. It is the
+            one place the site says how to reach her, which the channel's
+            closing button is not — that goes to YouTube. */}
+        <Footer />
       </main>
     </>
   );
