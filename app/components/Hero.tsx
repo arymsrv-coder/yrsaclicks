@@ -85,46 +85,45 @@ export default function Hero({
           mark at the top and clear of the middle of the frame, where the footage
           actually is. `bottom-[8dvh]` is a unit the `@supports` block in
           globals.css already covers. */}
+      {/* The way in, over the footage and visible from the first frame the hero
+          owns the screen — no scrolling, nothing to find.
+
+          Lower-centre rather than dead centre: clear of the mark at the top and
+          clear of the middle of the frame, where the footage actually is.
+          `bottom-[8dvh]` is a unit the `@supports` block in globals.css already
+          covers. */}
       <motion.div
         className="pointer-events-none absolute inset-x-0 bottom-[8dvh] z-10 flex justify-center px-6"
         initial={{ opacity: 0, y: 14 }}
         animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-        // The header's arrival curve and a comparable delay, so the button lands
+        // The mark's arrival curve and a comparable delay, so the button lands
         // with the page rather than fading in over a page that already arrived.
         transition={{ duration: 0.9, ease: EASE_OUT, delay: ready ? 0.6 : 0 }}
       >
         <Link
-          href="/members"
-          // Big, and deliberately so: this is the whole purpose of the page and
-          // it is competing with a full-bleed film for attention. The old box
-          // was 180×57 on desktop with type *smaller* there than on mobile,
-          // which is backwards for the one thing a visitor is meant to reach —
-          // it now grows with the viewport instead of shrinking.
+          href="/work"
+          // A threshold, not an offer. This used to be a filled brass block
+          // labelled "Members" that went straight at the gate; it now opens onto
+          // a crossroads where the visitor picks between the public work and the
+          // private archive, and nothing is being asked of them yet. So it is a
+          // hairline and a wash — the only interactive thing on the screen, and
+          // therefore unmissable without having to shout.
           //
-          // Full width on a phone, up to the measure the page's own gutters
-          // allow. A primary action on a 390px screen has no reason to be
-          // narrower than the screen — it is the largest thumb target the layout
-          // can offer and there is nothing beside it to share the row with. On
-          // desktop it goes back to sizing from its own padding, because a
-          // 1440px-wide button is not a button.
-          //
-          // Radius stays small: softened, not round. The bone outline is what
-          // lifts the fill off the photograph, and the wide tracking is what
-          // makes a five-letter word occupy the width it needs to read as a
-          // destination rather than a tag.
+          // The weight it used to carry moved to the archive's own button, which
+          // is where the decision actually happens now.
           //
           // `next/link`, which applies `basePath` itself — this must not go
           // through `asset()`.
-          className="cta-hero pointer-events-auto relative inline-flex w-full max-w-[340px] items-center justify-center rounded-[8px] md:w-auto md:max-w-none border-2 border-[var(--color-bone)] px-[46px] py-[23px] md:px-[60px] md:py-[28px] font-[family-name:var(--font-body)] text-[21px] md:text-[26px] font-extrabold uppercase tracking-[0.22em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
+          className="cta-quiet pointer-events-auto relative inline-flex min-h-[56px] items-center justify-center rounded-[6px] px-[52px] py-[17px] md:px-[64px] md:py-[19px] font-[family-name:var(--font-body)] text-[15px] md:text-[17px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
+          style={{
+            // The footage runs from bright sky to dark interior, so the wash
+            // behind the type cannot be relied on alone at every frame.
+            textShadow: "0 1px 8px rgba(0,0,0,0.45)",
+          }}
         >
-          {/* Behind the label and outside the button's own box, so it never
-              draws over the fill. Decorative — the link already names itself. */}
-          <span
-            aria-hidden="true"
-            className="cta-halo pointer-events-none absolute -inset-[7px] rounded-[13px] border-2"
-            style={{ borderColor: "var(--color-bone)" }}
-          />
-          Members
+          {/* The tracking opens the word out; the trailing letter-space it adds
+              would otherwise push the label off-centre inside the box. */}
+          <span className="-mr-[0.34em]">Enter</span>
         </Link>
       </motion.div>
     </section>
