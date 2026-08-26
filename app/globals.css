@@ -55,14 +55,6 @@ body {
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 /* `dvh` is an invalid value on browsers that predate it (older Android
    WebViews and in-app-browser engines are the ones that actually show up on
    this site's low-end-phone audience) — an unsupported value doesn't fall
@@ -81,9 +73,6 @@ body {
   .h-\[52dvh\] {
     height: 52vh;
   }
-  .bottom-\[5dvh\] {
-    bottom: 5vh;
-  }
   .bottom-\[6dvh\] {
     bottom: 6vh;
   }
@@ -92,25 +81,6 @@ body {
   }
   .mt-\[4dvh\] {
     margin-top: 4vh;
-  }
-  .mt-\[1\.5dvh\] {
-    margin-top: 1.5vh;
-  }
-  .gap-\[4dvh\] {
-    gap: 4vh;
-  }
-}
-
-/* Scroll-track height for StackSection: defaults to `vh` (the value stored in
-   `--track-vh` is unitless) and only upgrades to `svh` where it's supported —
-   see the comment at this class's use site for why a literal `svh` string
-   can't be used here directly. */
-.track-height {
-  height: calc(var(--track-vh) * 1vh);
-}
-@supports (height: 100svh) {
-  .track-height {
-    height: calc(var(--track-vh) * 1svh);
   }
 }
 
