@@ -113,11 +113,20 @@ export default function MembersPage() {
               href="/"
               aria-label="yrsaclicks — back to the landing page"
               className="flex min-h-[44px] cursor-pointer items-center transition-opacity duration-200 hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
-              // The mark carries its own separation from whatever part of the
-              // plate ends up behind it.
-              style={{ filter: "drop-shadow(0 1px 10px rgba(0,0,0,0.55))" }}
+              // ⚠️ The `drop-shadow` that used to sit here is gone, and must not
+              // come back. A filtered ancestor is a backdrop root, and the
+              // inverting mark below would sample an empty backdrop and paint
+              // nothing.
             >
-              <Logo className="w-[150px] md:w-[200px]" />
+              {/* The bright end of the plate — her hair and the wall behind
+                  her — so the inversion lands dark here and holds. The frosted
+                  treatment needed a hand-tuned direction on this route because
+                  brightening a near-white backdrop separates nothing; inversion
+                  needs no such help, so this is back on the defaults. */}
+              <Logo
+                variant="invert"
+                className="w-[150px] md:w-[200px]"
+              />
             </Link>
           </div>
 

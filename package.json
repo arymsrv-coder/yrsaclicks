@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-youtube.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "youtube": "node scripts/fetch-youtube.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.0.0",

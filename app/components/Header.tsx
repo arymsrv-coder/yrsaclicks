@@ -16,16 +16,26 @@ export default function Header({ ready = true }: { ready?: boolean }) {
     <header
       className="fixed top-[18px] lg:top-[26px] left-0 w-full z-[150] px-4 lg:px-10 flex justify-center items-start pointer-events-none"
       style={{
+        // Inherited by the mark only as the `@supports` fallback — where the
+        // browser can do the real thing, the mark takes its value by inverting
+        // the footage and this colour is never painted. See `.logo-invert`.
         color: "var(--color-paper)",
-        // `mix-blend-difference` used to sit here. It guaranteed legibility over
-        // any frame by inverting against it, which a small mark got away with —
-        // but at this size the inversion is the first thing you see: over a
-        // bright wall the warm off-white mark came out pale blue, which reads as
-        // a rendering fault rather than a brand. It now holds its own colour and
-        // carries its own separation from whatever is behind it, the same way
-        // the mark on /members does, so the mark is one consistent object across
-        // every route.
-        filter: "drop-shadow(0 1px 12px rgba(0,0,0,0.6))",
+
+        // Two treatments have been and gone here. `mix-blend-difference`
+        // guaranteed legibility by inverting against the frame, which a small
+        // mark got away with — but at this size the inversion is the first
+        // thing you see, and over a bright wall the warm off-white came out
+        // pale blue, which reads as a rendering fault rather than a brand. The
+        // flat off-white that replaced it had the opposite problem: one fixed
+        // colour asserted over footage that runs from bright sky to dark
+        // interior, and a frosted pass after that vanished into the bright end
+        // of it. The mark now inverts the footage rather than blending with it,
+        // so it has no colour of its own to be wrong.
+        //
+        // ⚠️ No `filter` here, and none on anything above the mark. A filtered
+        // ancestor is a backdrop root, and the mark would sample an empty
+        // backdrop and paint nothing. The `drop-shadow` that used to sit on
+        // this line is exactly what that rule forbids.
       }}
     >
       <span className="relative inline-block overflow-hidden pointer-events-auto">
@@ -46,7 +56,10 @@ export default function Header({ ready = true }: { ready?: boolean }) {
                 of the page now, so it can carry the whole width it wants without
                 crowding anything: it reads as the title of the picture rather
                 than a label pinned to the corner of it. */}
-            <Logo className="w-[210px] md:w-[290px] lg:w-[340px]" />
+            <Logo
+              variant="invert"
+              className="w-[210px] md:w-[290px] lg:w-[340px]"
+            />
           </Link>
         </motion.span>
       </span>
