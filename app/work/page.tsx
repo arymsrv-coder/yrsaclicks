@@ -35,7 +35,13 @@ export default function WorkPage() {
           aria-label="yrsaclicks — back to the landing page"
           className="flex min-h-[44px] cursor-pointer items-center transition-opacity duration-200 hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
         >
-          <Logo className="w-[150px] md:w-[200px]" />
+          {/* Same flat ink as the shell's routes, and the same reasoning:
+              one known colour in, one known colour out, so neither the contrast
+              push nor the edge has anything to do. */}
+          <Logo
+            variant="invert"
+            className="w-[150px] [--logo-contrast:1] [--logo-edge:0] md:w-[200px]"
+          />
         </Link>
       </div>
 

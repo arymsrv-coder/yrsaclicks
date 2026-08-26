@@ -45,7 +45,14 @@ export default function PageShell({
           // target, not a larger logo.
           className="flex min-h-[44px] cursor-pointer items-center transition-opacity duration-200 hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
         >
-          <Logo className="w-[130px] md:w-[180px]" />
+          {/* Flat ink is a single known colour, so the inversion is a single
+              known colour too — #2e3b31 comes back as a pale mauve. Nothing to
+              rescue from mid-grey here and nothing moving behind the mark, so
+              the contrast push and the edge are both switched off. */}
+          <Logo
+            variant="invert"
+            className="w-[130px] [--logo-contrast:1] [--logo-edge:0] md:w-[180px]"
+          />
         </Link>
       </div>
 
@@ -68,6 +75,32 @@ export default function PageShell({
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * One child let out of the shell's reading measure.
+ *
+ * `PageShell` clamps everything to `max-w-[62ch]`, which is right for prose and
+ * wrong for anything that is looked at rather than read. `/field`'s video rows
+ * are the case: a 304px tile inside 62ch leaves barely two across, and the row
+ * depends on overflowing — a tile clipped by the right edge is what says it
+ * continues sideways. Clamped, there is nothing to clip and the rows read as a
+ * short list that happens to be cut off.
+ *
+ * The negative margin is measured in the shell's own gutters, so the escape
+ * lands exactly on the page edges at both breakpoints. It stops at the measure
+ * plus those gutters rather than running to the full viewport: on a wide
+ * desktop a row spanning 2000px of ink would come adrift from the column of
+ * type it belongs to.
+ */
+export function ShellWide({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="-mx-5 md:-mx-8">
+      <div className="mx-auto w-full max-w-[calc(62ch+2.5rem)] px-5 md:max-w-[calc(62ch+4rem)] md:px-8">
+        {children}
+      </div>
+    </div>
   );
 }
 

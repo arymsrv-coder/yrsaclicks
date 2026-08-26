@@ -157,6 +157,110 @@ body {
   }
 }
 
+/* The mark, painted two ways. See `Logo.tsx` for which route uses which.
+ *
+ * `fill` is the original: the wordmark as a flat colour, taking whatever it
+ * inherits from the element it sits in.
+ */
+.logo-fill {
+  background-color: currentColor;
+}
+
+/* `invert` gives the mark no colour of its own. The letters are a window onto
+ * whatever is behind them, turned inside out — the sky comes back as orange,
+ * a white wall as near-black, the ink field as its own opposite. The mark is
+ * therefore never the same colour twice and never the same colour as its
+ * ground, which is the whole point of it.
+ *
+ * This replaces a frosted treatment that blurred and lifted the backdrop
+ * instead of inverting it. That one failed in one specific place and failed
+ * badly: brightness only lifts, so against a near-white wall there was nothing
+ * left to lift and the letters disappeared into it. Inversion has no such
+ * direction — it moves away from the backdrop wherever the backdrop happens
+ * to be.
+ *
+ * Deliberately `backdrop-filter: invert()` and not `mix-blend-difference`,
+ * which is what sat here two treatments ago and was removed for turning the
+ * warm off-white mark pale blue over a bright wall. Difference blends the
+ * mark's *own* colour with the frame, so the mark contributes a hue and the
+ * result is neither colour. Inverting the backdrop inside the mask has no
+ * colour of its own to contribute.
+ *
+ * `--logo-contrast` pushes values away from the middle before they are
+ * flipped. Mid-grey is the one backdrop inversion cannot separate from — it
+ * inverts to very nearly itself — and that is what this is for.
+ */
+.logo-invert {
+  background-color: transparent;
+  -webkit-backdrop-filter: invert(1) contrast(var(--logo-contrast, 1.18))
+    saturate(var(--logo-sat, 1));
+  backdrop-filter: invert(1) contrast(var(--logo-contrast, 1.18))
+    saturate(var(--logo-sat, 1));
+
+  /* A hairline edge, not the frosted version's shadow. Inversion carries its
+     own separation almost everywhere; this is only there to hold the
+     letterforms together where the backdrop passes through mid-grey. Kept
+     tight and faint on purpose — a soft wide shadow is what made the previous
+     treatment read as frosted, which is the look this replaces.
+
+     A `filter` on the same element as a `backdrop-filter` is fine: the
+     backdrop is sampled first, the element painted, this applied to the
+     result. A `filter` on an *ancestor* is still forbidden — it makes a
+     backdrop root and the mark samples nothing at all. */
+  filter: drop-shadow(0 0 1.5px rgb(0 0 0 / var(--logo-edge, 0.35)));
+}
+
+/* No backdrop support, no inversion — a transparent mark over an unfiltered
+   backdrop is an invisible mark, not a subtle one. Old Android WebViews, which
+   is Instagram's in-app browser on a cheap phone, are exactly the case: they
+   get the mark as a flat colour instead. Not a graceful degradation of the
+   effect, because there isn't one; it is the mark still being there. */
+@supports not ((backdrop-filter: invert(1)) or (-webkit-backdrop-filter: invert(1))) {
+  .logo-invert {
+    background-color: currentColor;
+    filter: none;
+  }
+}
+
+/* The video rows on `/field` scroll sideways, and a scrollbar under each one
+   would draw two grey rules across a page whose whole furniture is a hairline.
+   The rows still scroll natively — this hides the bar, not the behaviour. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* The veil behind the video player.
+ *
+ * Not the sibling site's wash, which is ink over a paper section — here the
+ * page under it is already ink, and ink over ink is a blur with no dimming in
+ * it: the rows stayed as bright as the video and the lightbox read as a tile
+ * that had grown. So this goes to near-black, which is the only direction that
+ * is actually darker than the ground, and lets the frame be the one lit thing
+ * on the screen.
+ *
+ * Deliberately not pure black. A dead black next to the page's dark green
+ * reads as a hole punched in the site; keeping a trace of ink in the mix keeps
+ * it the same room with the lights off. */
+.player-veil {
+  background-color: rgb(7 10 8 / 0.94);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Without the blur the colour is carrying it alone, so it goes very nearly
+   opaque — same reasoning as the gate below. */
+@supports not (
+  (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))
+) {
+  .player-veil {
+    background-color: rgb(7 10 8 / 0.985);
+  }
+}
+
 /* The age gate, as a sheet rising from the base of the archive rather than a
  * panel thrown over the whole route.
  *

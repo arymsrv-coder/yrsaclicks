@@ -114,7 +114,13 @@ export default function Hero({
           //
           // `next/link`, which applies `basePath` itself — this must not go
           // through `asset()`.
-          className="cta-quiet pointer-events-auto relative inline-flex min-h-[56px] items-center justify-center rounded-[6px] px-[52px] py-[17px] md:px-[64px] md:py-[19px] font-[family-name:var(--font-body)] text-[15px] md:text-[17px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
+          // Half again the size it was. It is the only interactive thing on the
+          // screen and it sits at the foot of a full-bleed film, where the old
+          // 56px box read as a caption rather than as the way in — small enough
+          // that on a phone held at arm's length it was competing with the
+          // footage for attention it should simply have had. The hairline and
+          // the wash are unchanged: what grew is the target, not the volume.
+          className="cta-quiet pointer-events-auto relative inline-flex min-h-[76px] items-center justify-center rounded-[6px] px-[76px] py-[22px] md:px-[96px] md:py-[24px] font-[family-name:var(--font-body)] text-[19px] md:text-[22px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
           style={{
             // The footage runs from bright sky to dark interior, so the wash
             // behind the type cannot be relied on alone at every frame.
