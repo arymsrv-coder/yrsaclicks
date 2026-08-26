@@ -183,3 +183,89 @@ body {
     background-color: color-mix(in srgb, var(--color-ink) 92%, transparent);
   }
 }
+
+/* The landing page's one action.
+ *
+ * This is the only thing on the page a visitor is meant to do, and it has to win
+ * against a full-bleed moving photograph — so it is filled in brass rather than
+ * ink. Ink is the ground the whole site is built on, which made the old button a
+ * dark green box on dark footage: it read as a border drawn over the picture
+ * until you found it. Brass is the system's designated action ground, it clears
+ * 4.5:1 with paper type on it (5.14:1), and it is the same colour as the gate's
+ * Continue — so the two steps of the one journey are visibly the same button
+ * twice rather than two different offers.
+ */
+.cta-hero {
+  background-color: var(--color-brass);
+
+  /* Two static layers, and static is the point — a box-shadow keyframe repaints
+     on the main thread every frame, which is the one thing this site's audience
+     cannot afford. The tight seat lifts the box off the photograph; the wide warm
+     bloom separates it from whatever is behind it without needing a scrim laid
+     over the footage. */
+  box-shadow:
+    0 3px 16px color-mix(in srgb, #000 38%, transparent),
+    0 0 52px color-mix(in srgb, var(--color-brass) 42%, transparent);
+
+  transition:
+    background-color 260ms ease,
+    transform 320ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Lifts toward the pointer rather than changing shape. Transform only, so it
+   composites without touching layout. */
+.cta-hero:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-brass) 82%,
+    var(--color-bone)
+  );
+  transform: translateY(-3px) scale(1.025);
+}
+
+.cta-hero:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* The halo: one ring that expands out of the button's edge and fades.
+ *
+ * Transform and opacity only, on its own element behind the box, so it runs on
+ * the GPU and never repaints either the button or the frame of film underneath
+ * it. A static box on moving footage loses to the footage — this is what carries
+ * the eye to the button in the first second without putting a single pixel of
+ * furniture over the picture.
+ *
+ * The ring sits entirely outside the button's own box, so it never draws over
+ * the fill or the label.
+ */
+@keyframes cta-breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.14);
+    opacity: 0;
+  }
+}
+
+.cta-halo {
+  animation: cta-breathe 3.8s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+}
+
+/* Reduced motion loses the breath and the lift and keeps a still ring, which
+   still reads as emphasis without anything moving. */
+@media (prefers-reduced-motion: reduce) {
+  .cta-halo {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .cta-hero:hover,
+  .cta-hero:active {
+    transform: none;
+  }
+}

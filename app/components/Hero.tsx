@@ -95,30 +95,35 @@ export default function Hero({
       >
         <Link
           href="/members"
-          // The plate's CTA treatment, carried over intact from the scroll
-          // section this replaced. A filled button, not an outline: the outlined
-          // version was legible only once you found it — it read as a border
-          // drawn over a photo until you hovered, and on touch there is no hover
-          // at all. Solid ink carries its own contrast against the footage, so it
-          // reads as a button before anything is pointed at it.
+          // Big, and deliberately so: this is the whole purpose of the page and
+          // it is competing with a full-bleed film for attention. The old box
+          // was 180×57 on desktop with type *smaller* there than on mobile,
+          // which is backwards for the one thing a visitor is meant to reach —
+          // it now grows with the viewport instead of shrinking.
           //
-          // Radius is deliberately small — softened, not round. The bone outline
-          // is what lifts the fill off the photograph. The padding is not a round
-          // number because the box was scaled 1.04 on both axes and the 2px
-          // border does not scale with it — 2.08px is not something a screen can
-          // draw — so the padding absorbs that remainder for the outer box to
-          // land where it was measured. Type scales with the box, so the label
-          // grows with the button instead of drifting inside it.
+          // Full width on a phone, up to the measure the page's own gutters
+          // allow. A primary action on a 390px screen has no reason to be
+          // narrower than the screen — it is the largest thumb target the layout
+          // can offer and there is nothing beside it to share the row with. On
+          // desktop it goes back to sizing from its own padding, because a
+          // 1440px-wide button is not a button.
+          //
+          // Radius stays small: softened, not round. The bone outline is what
+          // lifts the fill off the photograph, and the wide tracking is what
+          // makes a five-letter word occupy the width it needs to read as a
+          // destination rather than a tag.
           //
           // `next/link`, which applies `basePath` itself — this must not go
           // through `asset()`.
-          className="pointer-events-auto inline-block rounded-[6px] border-2 border-[var(--color-bone)] bg-[var(--color-ink)] px-[25.4px] py-[14.9px] font-[family-name:var(--font-body)] text-[18.5px] md:text-[15.6px] font-extrabold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-colors duration-300 hover:bg-[var(--color-brass)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-bone)]"
-          style={{
-            // Static, not animated — a box-shadow keyframe would repaint on the
-            // main thread every frame.
-            boxShadow: "0 2px 12px color-mix(in srgb, #000 22%, transparent)",
-          }}
+          className="cta-hero pointer-events-auto relative inline-flex w-full max-w-[340px] items-center justify-center rounded-[8px] md:w-auto md:max-w-none border-2 border-[var(--color-bone)] px-[46px] py-[23px] md:px-[60px] md:py-[28px] font-[family-name:var(--font-body)] text-[21px] md:text-[26px] font-extrabold uppercase tracking-[0.22em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
         >
+          {/* Behind the label and outside the button's own box, so it never
+              draws over the fill. Decorative — the link already names itself. */}
+          <span
+            aria-hidden="true"
+            className="cta-halo pointer-events-none absolute -inset-[7px] rounded-[13px] border-2"
+            style={{ borderColor: "var(--color-bone)" }}
+          />
           Members
         </Link>
       </motion.div>
