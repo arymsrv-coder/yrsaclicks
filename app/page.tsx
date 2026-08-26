@@ -1,87 +1,48 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motionValue } from "framer-motion";
+import { useState } from "react";
+import { MotionConfig } from "framer-motion";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Loader from "./components/Loader";
-import StackSection from "./components/StackSection";
-import { ScrollProvider } from "./context/ScrollContext";
-import { asset } from "./lib/asset";
 
-// One plate, arriving on the ink half of the two-tone system over the hero's
-// footage. The page is now the shortest it can be and still have somewhere to
-// go: the footage, then the way in.
-//
-// The panel used to be paper, which meant the one solid sheet the visitor sees
-// on the way in was off-white — the only place on the site where the ground was
-// not the brand green. Ink puts the arrival on the same green as the loading
-// screen it followed, and the header's `mix-blend-difference` mark inverts to
-// pale over it without needing anything said here.
-const sections = [
-  {
-    // Explicit, not derived from the title — the title is two words now, and
-    // lower-casing it would put a space in the anchor id.
-    id: "members",
-    index: "01",
-    title: "Private archive",
-    subtitle: "The private archive",
-    poster: asset("/media/members.jpg"),
-    panel: "ink" as const,
-    cta: {
-      label: "Continue",
-      href: "/members",
-    },
-  },
-];
-
-function HomeContent() {
+/**
+ * The landing page, and it is one screen.
+ *
+ * Loading reel → the footage, with the way in laid over it. There is no second
+ * panel and nothing below the fold, because there is no fold: the scroll
+ * subsystem this page used to be built around — a Lenis container, a scrubbed
+ * aperture and a plate that rode up through a tall track — is gone. The visitor
+ * sees the film and the button in the same glance, which is the whole of what
+ * this site is for.
+ *
+ * `fixed inset-0` on the main is what actually makes it not scroll, rather than
+ * `overflow: hidden` on `html, body`. Two reasons: it is scoped to this route,
+ * so `/about` and `/contact` can still scroll like ordinary pages; and it pins
+ * the hero to the real viewport box on the browsers that fall back from `dvh`
+ * to `vh` (§4.5) — there, `100vh` is *taller* than the visible area whenever a
+ * mobile toolbar is out, which would have handed back exactly the stray
+ * toolbar-height scroll this task exists to remove.
+ */
+export default function Home() {
   const [ready, setReady] = useState(false);
 
   // Where the loading reel's footage had got to as the panel came away, so the
-  // hero continues it rather than restarting it. Null until the hand-off, which is
-  // also the hero's cue to start playing at all.
+  // hero continues it rather than restarting it. Null until the hand-off, which
+  // is also the hero's cue to start playing at all.
   const [handoffAt, setHandoffAt] = useState<number | null>(null);
 
-  const progressValues = useMemo(() => sections.map(() => motionValue(0)), []);
-
-  // Every section hides its own text once the *next* one starts arriving. The
-  // last section has no next one — it is where scrolling comes to rest — so it
-  // measures against a value that never moves. Handing it a real element below
-  // instead made its title and its button fade out over the final few percent
-  // of the scroll, which is precisely where the visitor stops and needs the
-  // button.
-  const endStop = useMemo(() => motionValue(0), []);
-
   return (
-    <>
+    // One switch for every transform animation on this route: visitors who ask
+    // for reduced motion keep the fades and lose the travel. It used to live
+    // inside `ScrollProvider`, which no longer exists — mounted here so it is
+    // still above the loader, the header and the hero.
+    <MotionConfig reducedMotion="user">
       <Loader onDone={() => setReady(true)} onHandoff={setHandoffAt} />
       <Header ready={ready} />
-      <main className="relative">
-        {/* One stacking context: every child pins at top:0 and the next
-            one is painted over it, so earlier pages stay put underneath. */}
-        <div className="relative">
-          <Hero ready={ready} startAt={handoffAt} />
-          {sections.map((s, i) => (
-            <StackSection
-              key={s.index}
-              {...s}
-              progressMV={progressValues[i]}
-              nextProgressMV={
-                i === sections.length - 1 ? endStop : progressValues[i + 1]
-              }
-            />
-          ))}
-        </div>
+      <main className="fixed inset-0 overflow-hidden">
+        <Hero ready={ready} startAt={handoffAt} />
       </main>
-    </>
-  );
-}
-
-export default function Home() {
-  return (
-    <ScrollProvider>
-      <HomeContent />
-    </ScrollProvider>
+    </MotionConfig>
   );
 }

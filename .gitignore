@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Client source material — kept locally, never published.
+#
+# ~198MB of unpublished photography, the client brief, and internal notes were
+# tracked in this repository while it was public (audit finding A2). Untracking
+# them removes the exposure from HEAD onward; it does NOT remove them from
+# history, which still needs either a private repo or a history rewrite.
+# `public/` should hold only what the site actually serves.
+/Content/
+/Notes/
+/logo/
+/slideshow/
+/to-delete/
