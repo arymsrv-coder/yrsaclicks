@@ -206,7 +206,17 @@ body {
      A `filter` on the same element as a `backdrop-filter` is fine: the
      backdrop is sampled first, the element painted, this applied to the
      result. A `filter` on an *ancestor* is still forbidden — it makes a
-     backdrop root and the mark samples nothing at all. */
+     backdrop root and the mark samples nothing at all.
+
+     ⚠️ `opacity` below 1 makes a backdrop root by exactly the same rule, and
+     it is the easier one to reintroduce by accident because it does not look
+     like a filter. Every route wrapped this mark in a link carrying
+     `hover:opacity-60`, which was harmless while the mark was a flat colour —
+     it dimmed. Against a mark that has no colour of its own it was fatal: on
+     hover the link became a backdrop root, the mark sampled an empty backdrop,
+     and the wordmark vanished off the page entirely rather than fading. The
+     hover now lives on the mark's own element, where opacity applies to the
+     already-sampled result. Keep it there. */
   filter: drop-shadow(0 0 1.5px rgb(0 0 0 / var(--logo-edge, 0.35)));
 }
 
@@ -376,7 +386,12 @@ body {
  * `@supports` fallback below, and for the same audience.
  */
 .cta-quiet {
-  background-color: color-mix(in srgb, var(--color-ink) 20%, transparent);
+  /* Deep enough to carry paper type over the brightest frame in the loop. This
+     was 20%, which measured 3.83:1 against the label on the bright street
+     frame — under the 4.5:1 floor, on the one control the page has. The wash
+     is what makes the label legible, so it is sized for the worst frame rather
+     than the average one. */
+  background-color: color-mix(in srgb, var(--color-ink) 42%, transparent);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   border: 1.5px solid color-mix(in srgb, var(--color-paper) 72%, transparent);
@@ -387,8 +402,19 @@ body {
     transform 320ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
+/* Hover deepens the wash. It used to *lighten* it — `paper 16%` — which moved
+   the inside of the button toward the colour of the type sitting on it, so
+   pointing at the one thing on the page you are meant to press made its label
+   harder to read, and over a bright frame it washed out to 2.90:1. It read as
+   the button disappearing under the cursor.
+   
+   Over dark footage that swap happened to improve contrast, which is exactly
+   why it survived: the fault only shows on the bright half of the loop. Moving
+   in the same direction as the resting state instead means hover can only ever
+   make the label clearer, whatever is behind it. The border going to solid
+   paper is what signals the hover; the wash no longer has to. */
 .cta-quiet:hover {
-  background-color: color-mix(in srgb, var(--color-paper) 16%, transparent);
+  background-color: color-mix(in srgb, var(--color-ink) 58%, transparent);
   border-color: var(--color-paper);
   transform: translateY(-2px);
 }
@@ -404,7 +430,7 @@ body {
   (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))
 ) {
   .cta-quiet {
-    background-color: color-mix(in srgb, var(--color-ink) 52%, transparent);
+    background-color: color-mix(in srgb, var(--color-ink) 68%, transparent);
   }
 }
 
