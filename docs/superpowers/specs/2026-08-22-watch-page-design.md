@@ -354,3 +354,41 @@ that reads as an apology.
 The first build that finds real uploads replaces the whole snapshot and the
 stand-ins disappear on their own. Their files (`standin-*.jpg`) can be deleted
 then.
+
+---
+
+## Second amendment — back to `/watch`, and why
+
+Status: the original design's placement is live again. The amendment above is
+history.
+
+`main` replaced the scrolling landing page with a single screen: no fold, no
+Lenis container, no scrubbed aperture, no stacked plates. `ScrollContext`,
+`StackSection`, `Footer` and `tests/scroll-pacing.mjs` were all deleted, and
+two routes — `/about` and `/contact` — arrived alongside a shared `PageShell`.
+
+That is flatly incompatible with the amendment above, which put the rows below
+the fold on a page whose whole argument is now that it has no fold. Merging the
+two meant choosing, and the choice was not close: a landing page that is one
+screen is a decision about what the site is for, while *where* the rows live is
+a decision about routing. So the landing page keeps its single screen and the
+rows go back to the route this document specified in the first place.
+
+Three things fell out of the move, and all three were subtractions:
+
+- The Lenis fencing on the row scrollers is gone. It existed only because the
+  rows had been inside a Lenis container; on a natively scrolling route a
+  horizontal overflow needs no help.
+- `Player` no longer stops and starts Lenis. `body { overflow: hidden }` is once
+  more the whole of the lock, which is what the original design said.
+- `Header`'s `retracted` prop went with the section it was added for. The mark
+  had to lift out of the way of a heading near the top of the screen; a route
+  that places its own mark never has that problem.
+
+**Reachability is the one thing the original design did not have to answer.**
+The rows used to be reached from a plate on the landing page, and that plate no
+longer exists. The landing page cannot gain a link back without becoming two
+things again, so the way in is the quiet nav that `/about` and `/contact`
+already carry. A test asserts it, because a route nothing links to is a route
+nobody reaches, and that is the kind of rot a later edit to either page would
+cause silently.

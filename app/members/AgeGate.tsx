@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { EASE } from "../lib/motion";
+import { useIsMetaWebview } from "../lib/useIsMetaWebview";
 
 /**
  * Self-declared age confirmation. Nothing identifying is asked for, and nothing
@@ -28,6 +29,14 @@ export default function AgeGate({
 }) {
   const [checked, setChecked] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // Whether the hint below is warranted at all, and whether it has been waved
+  // away. Dismissal is per-view on purpose: this route stores nothing, and a hint
+  // this small is not worth becoming the one thing the site writes to a visitor's
+  // device.
+  const inMetaWebview = useIsMetaWebview();
+  const [hintDismissed, setHintDismissed] = useState(false);
+  const showHint = inMetaWebview && !hintDismissed;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -139,6 +148,47 @@ export default function AgeGate({
         >
           Continue
         </a>
+
+        {/* The in-app-browser hint, and only inside a Meta in-app browser.
+            Outside one this renders nothing at all — no placeholder, no reserved
+            space — because for everyone else there is nothing to explain.
+
+            Informational, and nothing more than that. It does not touch the link
+            above it: no redirect, no `window.location`, no `window.open`, no
+            click handler of any kind. The forceful browser-exit pattern was
+            considered and rejected on platform-policy grounds, and it is not
+            coming back in through a hint.
+
+            Below the button rather than above it, so the button is still the
+            first thing read after the checkbox, and in `pine-light` — the accent
+            that clears 4.5:1 on ink — at a size that keeps it subordinate to the
+            action it annotates. */}
+        {showHint && (
+          <div
+            className="mt-3 flex items-start gap-2 border px-3 py-2 text-left"
+            style={{
+              borderColor:
+                "color-mix(in srgb, var(--color-pine-light) 30%, transparent)",
+              color: "var(--color-pine-light)",
+            }}
+          >
+            <p className="flex-1 font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.12em] leading-[1.5]">
+              Opens best outside Instagram — tap ⋯ then Open in Browser.
+            </p>
+            <button
+              type="button"
+              onClick={() => setHintDismissed(true)}
+              aria-label="Dismiss this tip"
+              // Inside the panel, so the focus trap picks it up as an ordinary
+              // focusable — which is right. Dismissing unmounts it, and because
+              // the trap re-queries the panel on every Tab rather than caching a
+              // list, the cycle closes over what is actually still there.
+              className="-m-2 shrink-0 cursor-pointer p-2 font-[family-name:var(--font-body)] text-[13px] leading-none opacity-70 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         <button
           type="button"

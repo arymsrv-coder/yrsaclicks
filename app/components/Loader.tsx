@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Logo from "./Logo";
-import { useScrollContext } from "../context/ScrollContext";
 import { asset } from "../lib/asset";
 import {
   APERTURE_CLIP,
@@ -30,9 +29,6 @@ const REEL = [
   { src: asset("/media/reel/reel-08.jpg"), alt: "" },
   { src: asset("/media/reel/reel-09.jpg"), alt: "" },
 ];
-
-/** The frame is 86vw until it hits its own ceiling. */
-const REEL_SIZES = "(min-width: 1280px) 1100px, 86vw";
 
 /** Frames, counting the closing footage. */
 const REEL_LENGTH = REEL.length + 1;
@@ -81,7 +77,6 @@ export default function Loader({
    */
   onHandoff: (videoTime: number) => void;
 }) {
-  const { lenis } = useScrollContext();
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(true);
   const [zoom, setZoom] = useState<Zoom | null>(null);
@@ -118,13 +113,6 @@ export default function Loader({
   useEffect(() => {
     doneRef.current = onDone;
   }, [onDone]);
-
-  // Nothing should scroll behind the panel.
-  useEffect(() => {
-    if (!lenis) return;
-    if (open) lenis.stop();
-    else lenis.start();
-  }, [lenis, open]);
 
   /**
    * From the frame's laid-out rect to the transform that makes it cover the
@@ -232,14 +220,15 @@ export default function Loader({
                     src={frame.src}
                     alt={frame.alt}
                     fill
-                    sizes={REEL_SIZES}
-                    // The first few are needed before lazy loading would get
-                    // to them; the rest have seconds of runway.
-                    priority={i < 3}
-                    // These flash by in under half a second each, so full
-                    // quality is wasted bytes — this trims the payload
-                    // noticeably on the low-end phones this loader runs on.
-                    quality={70}
+                    // Every frame is wanted inside four seconds — frame four at
+                    // ~1.2s, frame nine at ~3.6s — and the loader runs on a
+                    // fixed clock, so it will not wait for one that has not
+                    // arrived. Lazy loading the tail meant the reel could iris
+                    // open onto an unpainted frame on a congested connection.
+                    loading="eager"
+                    // Only the first few are genuinely urgent; the rest have
+                    // runway and should not compete with hero.mp4 for it.
+                    fetchPriority={i < 3 ? "high" : "low"}
                     // Portrait shots in a landscape frame: a centered crop
                     // drifts into her torso on wide screens. Biasing toward
                     // the top keeps her face and shoulders in frame instead.

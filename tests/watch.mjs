@@ -1,6 +1,5 @@
 /**
- * Guards the landing page's channel section: the two rows, and the one
- * decision the section's usability
+ * Guards `/watch`: the two rows, and the one decision the page's usability
  * rests on — that no YouTube player exists until a tile is clicked.
  *
  * Two modes, because the committed snapshot can legitimately be empty (it was
@@ -248,19 +247,17 @@ try {
     if (!r.url().startsWith(`http://localhost:${PORT}`)) offsite.push(r.url());
   });
 
-  // The rows live on the landing page now, not on a route of their own.
-  await page.goto(`http://localhost:${PORT}/`, { waitUntil: "load" });
+  // Back on a route of their own: the landing page is one screen again, and
+  // the scroll subsystem the rows briefly lived inside is gone.
+  await page.goto(`http://localhost:${PORT}/watch/`, { waitUntil: "load" });
 
-  const channel = page.locator("#youtube");
+  const channel = page.locator("main");
   // A tile is a button when there is a video behind it and a link when it is a
   // stand-in, so match on the picture rather than on the element.
   const tiles = channel.locator("button:has(img), a:has(img)");
   const tileCount = await tiles.count();
 
-  check(
-    "the channel section is on the landing page",
-    (await channel.count()) === 1,
-  );
+  check("the /watch route is served", (await channel.count()) === 1);
   check(
     "no player iframe exists before a click",
     (await page.locator("iframe").count()) === 0,
@@ -282,9 +279,6 @@ try {
   check("the videos row renders", (await videosRow.count()) === 1);
   check("both rows hold tiles", tileCount === PER_ROW * 2, `${tileCount} tiles`);
 
-  // The boot loader sits over everything until the hero has taken over, and a
-  // click that lands on it is a click the row never sees.
-  await page.locator("#youtube").scrollIntoViewIfNeeded();
   await tiles.first().waitFor({ state: "visible", timeout: 15000 });
 
   if (!STANDINS) {
@@ -362,12 +356,13 @@ try {
     await videosRow.getByRole("button", { name: /back/i }).isDisabled(),
   );
 
-  // Lenis owns wheel and touch for the landing page. A row inside it has to be
-  // fenced off or a sideways gesture scrolls the page instead of the row.
+  // A route nothing links to is a route nobody reaches. The landing page is one
+  // screen by design, so the way in is the quiet nav both legitimacy pages
+  // carry — which is the thing that would silently rot if either were edited.
+  await page.goto(`http://localhost:${PORT}/about/`, { waitUntil: "load" });
   check(
-    "each row is fenced off from Lenis",
-    (await channel.locator("[data-lenis-prevent-horizontal]").count()) === 2 &&
-      (await channel.locator("[data-lenis-prevent]").count()) === 0,
+    "the channel is reachable from the site",
+    (await page.locator('a[href$="/watch/"], a[href$="/watch"]').count()) >= 1,
   );
 } catch (error) {
   check("the run completes without throwing", false, error.message);
