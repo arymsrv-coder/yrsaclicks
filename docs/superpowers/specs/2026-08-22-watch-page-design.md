@@ -392,3 +392,38 @@ things again, so the way in is the quiet nav that `/about` and `/contact`
 already carry. A test asserts it, because a route nothing links to is a route
 nobody reaches, and that is the kind of rot a later edit to either page would
 cause silently.
+
+
+---
+
+## Third amendment — `/field`, and what this branch is now for
+
+Status: superseded twice over. `main` shipped the rows itself, and this document
+is kept as the record of why they are shaped the way they are.
+
+While this branch was resolving the last merge, `main` put the channel on the
+page by its own route: `app/components/VideoRows.tsx`, rendered by `/field`
+inside the shared `PageShell`, reached from `/work`. The snapshot it ships is
+byte-identical to this branch's, and `scripts/fetch-youtube.mjs`,
+`scripts/youtube-classify.mjs` and `app/lib/youtube.ts` all arrived with it.
+
+So the placement question this document has now answered three ways is closed,
+and not by this branch. `/watch` is deleted here rather than merged: two routes
+rendering the same rows is worse than either one of them, and `main`'s is the
+one that shipped.
+
+**What this branch still carries is the part `main` did not bring with it.**
+
+`tests/watch.mjs` — twenty-four assertions over the rows and the player, which
+`main` has no equivalent of. Retargeted at `/field` and passing against it: the
+duration rule and its override, the keyless fetch leaving the snapshot
+byte-identical, every named thumbnail existing on disk, no iframe before a
+click, no third-party request on load, the no-cookie host, the labelled dialog,
+the scroll lock and its release, the chevrons and their disabled state, and one
+that the route is reachable at all.
+
+That last one is worth stating plainly, because it is the assertion most likely
+to be the reason this file earns its place: the landing page is one screen by
+design and cannot link onward without becoming two things, so `/field` hangs off
+a single hop from `/work`. Nothing else in the repository would notice if that
+link were removed.

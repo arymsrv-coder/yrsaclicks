@@ -43,7 +43,6 @@ export default function AboutPage() {
       <ShellNav
         links={[
           { href: "/contact", label: "Contact" },
-          { href: "/watch", label: "Watch" },
           { href: "/", label: "Back to home" },
         ]}
       />

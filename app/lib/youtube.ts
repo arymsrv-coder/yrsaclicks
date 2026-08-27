@@ -54,6 +54,13 @@ export const hasClips = snapshot.shorts.length + snapshot.videos.length > 0;
 /**
  * Where a tile goes when there is no video behind it, and where the row's
  * closing button goes in every case.
+ *
+ * The one address for the channel on this site. `/field` used to carry a
+ * `@yrsaclicks` URL of its own, guessed from the Instagram handle and flagged
+ * as unconfirmed. It resolves to a real channel, which is what let it survive
+ * so long — but that channel has no public uploads, so nothing in the snapshot
+ * above came from it. Every clip in these rows, and the button under them,
+ * belong to the handle below.
  */
 export const CHANNEL_URL = "https://www.youtube.com/@yrsasjourney";
 

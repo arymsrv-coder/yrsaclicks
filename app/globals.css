@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* z-index scale: 150 nav header, 250 age-gate overlay and the /watch player
-   (different routes, so they never coexist), 260 members header (above the
-   gate), 270 members arrival veil, 300 boot loader (above everything). Keep new
-   fixed/sticky layers on this scale instead of picking an arbitrary number. */
+/* z-index scale: 150 nav header, 250 age-gate overlay, 260 members header
+   (above the gate), 270 members arrival veil, 300 boot loader (above
+   everything). Keep new fixed/sticky layers on this scale instead of picking an
+   arbitrary number. */
 
 :root {
   /* Two-tone system. --color-ink plays the role red plays on the
@@ -31,13 +31,6 @@
   /* Filled-button ground. Darkened from the archive's #8a6a3a so that paper
      text on it clears 4.5:1 (5.14:1). */
   --color-brass: #7a5a2c;
-
-  /* The hover state for anything filled with brass. Brass used to be the hover
-     and ink the resting fill; now that the plate's button rests on brass it
-     needs somewhere to go, and going *down* is the only direction available —
-     lightening brass would take paper text below 4.5:1. Paper on this is
-     6.71:1. */
-  --color-brass-deep: #644a24;
 
   /* Button outline. Warmer and a shade deeper than --color-paper, so the edge
      still separates from paper-coloured type sitting inside it instead of
@@ -89,43 +82,8 @@ body {
   .mt-\[4dvh\] {
     margin-top: 4vh;
   }
-}
-
-/* The slack that lets the channel's content be held still while the panel over
-   it opens.
- *
- * A `sticky` child can only be pinned for as much as its containing block is
- * taller than it, so the section has to carry that much extra height — and it
- * has to be a box after the content rather than `padding-bottom` on the parent,
- * which was the first thing tried and does nothing at all. The bound on a
- * sticky shift is the containing block's *content* box, and padding is by
- * definition outside it, so the child had exactly zero room to travel and
- * simply never stuck.
- *
- * A spacer leaves nothing behind at the end of the page, which is the whole
- * point of doing it this way: a sticky child is pushed by the bottom of its
- * containing block, so once the hold is spent the content comes to rest flush
- * with the foot of the section and the spacer ends up underneath it rather than
- * after it. The page still ends on the last row.
- *
- * `svh` for the same reason `track-height` uses it: this is scroll distance,
- * and a mobile toolbar sliding away would otherwise relayout it mid-arrival.
- * Same custom-property trick, for the same reason — see `track-height`.
- *
- * Reduced motion pins the aperture open, so nothing is being uncovered and
- * there is nothing to hold still for. The spacer collapses, the hold lasts no
- * distance at all, and the channel is ordinary content that scrolls. */
-.arrival-hold {
-  height: calc(var(--pin-vh) * 1vh);
-}
-@supports (height: 100svh) {
-  .arrival-hold {
-    height: calc(var(--pin-vh) * 1svh);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .arrival-hold {
-    height: 0;
+  .pb-\[9dvh\] {
+    padding-bottom: 9vh;
   }
 }
 
@@ -199,21 +157,96 @@ body {
   }
 }
 
-/* The veil behind the player on /watch.
+/* The mark, painted two ways. See `Logo.tsx` for which route uses which.
  *
- * Deliberately not `gate-veil`, which is the neighbouring block and was the
- * first thing tried. That one is tuned to sit over the members plate — a
- * full-bleed photograph on a dark ground — where a little over a third of ink
- * is plenty to hold a panel forward. the channel section is paper, and the same wash over
- * paper is pale sage: the player stopped reading as the thing in front, and the
- * paper-coloured caption under it landed at roughly the value of the veil
- * itself, which is a contrast failure rather than a matter of taste.
- *
- * Going dark is also the right gesture for watching — a room lowering its
- * lights — so this one commits to it instead of hedging.
+ * `fill` is the original: the wordmark as a flat colour, taking whatever it
+ * inherits from the element it sits in.
  */
+.logo-fill {
+  background-color: currentColor;
+}
+
+/* `invert` gives the mark no colour of its own. The letters are a window onto
+ * whatever is behind them, turned inside out — the sky comes back as orange,
+ * a white wall as near-black, the ink field as its own opposite. The mark is
+ * therefore never the same colour twice and never the same colour as its
+ * ground, which is the whole point of it.
+ *
+ * This replaces a frosted treatment that blurred and lifted the backdrop
+ * instead of inverting it. That one failed in one specific place and failed
+ * badly: brightness only lifts, so against a near-white wall there was nothing
+ * left to lift and the letters disappeared into it. Inversion has no such
+ * direction — it moves away from the backdrop wherever the backdrop happens
+ * to be.
+ *
+ * Deliberately `backdrop-filter: invert()` and not `mix-blend-difference`,
+ * which is what sat here two treatments ago and was removed for turning the
+ * warm off-white mark pale blue over a bright wall. Difference blends the
+ * mark's *own* colour with the frame, so the mark contributes a hue and the
+ * result is neither colour. Inverting the backdrop inside the mask has no
+ * colour of its own to contribute.
+ *
+ * `--logo-contrast` pushes values away from the middle before they are
+ * flipped. Mid-grey is the one backdrop inversion cannot separate from — it
+ * inverts to very nearly itself — and that is what this is for.
+ */
+.logo-invert {
+  background-color: transparent;
+  -webkit-backdrop-filter: invert(1) contrast(var(--logo-contrast, 1.18))
+    saturate(var(--logo-sat, 1));
+  backdrop-filter: invert(1) contrast(var(--logo-contrast, 1.18))
+    saturate(var(--logo-sat, 1));
+
+  /* A hairline edge, not the frosted version's shadow. Inversion carries its
+     own separation almost everywhere; this is only there to hold the
+     letterforms together where the backdrop passes through mid-grey. Kept
+     tight and faint on purpose — a soft wide shadow is what made the previous
+     treatment read as frosted, which is the look this replaces.
+
+     A `filter` on the same element as a `backdrop-filter` is fine: the
+     backdrop is sampled first, the element painted, this applied to the
+     result. A `filter` on an *ancestor* is still forbidden — it makes a
+     backdrop root and the mark samples nothing at all. */
+  filter: drop-shadow(0 0 1.5px rgb(0 0 0 / var(--logo-edge, 0.35)));
+}
+
+/* No backdrop support, no inversion — a transparent mark over an unfiltered
+   backdrop is an invisible mark, not a subtle one. Old Android WebViews, which
+   is Instagram's in-app browser on a cheap phone, are exactly the case: they
+   get the mark as a flat colour instead. Not a graceful degradation of the
+   effect, because there isn't one; it is the mark still being there. */
+@supports not ((backdrop-filter: invert(1)) or (-webkit-backdrop-filter: invert(1))) {
+  .logo-invert {
+    background-color: currentColor;
+    filter: none;
+  }
+}
+
+/* The video rows on `/field` scroll sideways, and a scrollbar under each one
+   would draw two grey rules across a page whose whole furniture is a hairline.
+   The rows still scroll natively — this hides the bar, not the behaviour. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* The veil behind the video player.
+ *
+ * Not the sibling site's wash, which is ink over a paper section — here the
+ * page under it is already ink, and ink over ink is a blur with no dimming in
+ * it: the rows stayed as bright as the video and the lightbox read as a tile
+ * that had grown. So this goes to near-black, which is the only direction that
+ * is actually darker than the ground, and lets the frame be the one lit thing
+ * on the screen.
+ *
+ * Deliberately not pure black. A dead black next to the page's dark green
+ * reads as a hole punched in the site; keeping a trace of ink in the mix keeps
+ * it the same room with the lights off. */
 .player-veil {
-  background-color: color-mix(in srgb, var(--color-ink) 92%, transparent);
+  background-color: rgb(7 10 8 / 0.94);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
@@ -224,36 +257,204 @@ body {
   (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))
 ) {
   .player-veil {
-    background-color: color-mix(in srgb, var(--color-ink) 97%, transparent);
+    background-color: rgb(7 10 8 / 0.985);
   }
 }
 
-/* The age gate's veil, over /members.
+/* The age gate, as a sheet rising from the base of the archive rather than a
+ * panel thrown over the whole route.
  *
- * Ink at a little over a third with a blur under it, rather than the
- * near-opaque wash that used to sit here: the plate stays legible as the
- * photograph the page is about, the panel over it stays legible as type, and
- * the two read as one screen instead of two.
- *
- * In CSS rather than inline on the element for the sake of the fallback below —
- * `@supports` is not something a style attribute can express.
+ * The confrontation was the point of the old one and is not the point of this
+ * one: the visitor has already chosen the private branch twice by the time they
+ * reach it, so the gate's job is to be unmissable and answerable, not to block
+ * the page. It never covers the photograph it is gating, it lands under the
+ * thumb rather than in the middle of the screen, and the page behind it stays
+ * visible — and `inert`, so a screen reader cannot wander into it.
  */
-.gate-veil {
-  background-color: color-mix(in srgb, var(--color-ink) 38%, transparent);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+.gate-scrim {
+  background-color: color-mix(in srgb, var(--color-ink) 46%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 
-/* Without the blur, the opacity is carrying the gate on its own — and a third
- * of a wash over a full-bleed still leaves the still very nearly readable,
- * which is the one thing a gate that has not been passed yet must not do. So
- * where `backdrop-filter` is missing the ink goes back up to where it was.
- * Old Android WebViews are exactly the case: on this site's actual audience
- * that is Instagram's in-app browser on a cheap phone. */
 @supports not (
-  (backdrop-filter: blur(6px)) or (-webkit-backdrop-filter: blur(6px))
+  (backdrop-filter: blur(3px)) or (-webkit-backdrop-filter: blur(3px))
 ) {
-  .gate-veil {
-    background-color: color-mix(in srgb, var(--color-ink) 92%, transparent);
+  .gate-scrim {
+    background-color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+}
+
+/* The Private Archive's one action — the button that opens the age gate.
+ *
+ * This is the only thing on that page a visitor is meant to do, and it has to
+ * win against a full-bleed photograph — so it is filled in brass rather than
+ * ink. Ink is the ground the whole site is built on, which made the old button a
+ * dark green box on dark footage: it read as a border drawn over the picture
+ * until you found it. Brass is the system's designated action ground, it clears
+ * 4.5:1 with paper type on it (5.14:1), and it is the same colour as the gate's
+ * Continue — so the two steps of the one journey are visibly the same button
+ * twice rather than two different offers.
+ *
+ * It used to sit on the hero. The hero's button is now a threshold rather than a
+ * conversion — it leads to a crossroads, not to the paid link — so the weight
+ * moved here, to the last step before the gate, which is where the decision
+ * actually gets made.
+ */
+.cta-solid {
+  background-color: var(--color-brass);
+
+  /* Two static layers, and static is the point — a box-shadow keyframe repaints
+     on the main thread every frame, which is the one thing this site's audience
+     cannot afford. The tight seat lifts the box off the photograph; the wide
+     warm bloom separates it from whatever is behind it without needing a scrim
+     laid over the picture. */
+  box-shadow:
+    0 3px 16px color-mix(in srgb, #000 38%, transparent),
+    0 0 52px color-mix(in srgb, var(--color-brass) 42%, transparent);
+
+  transition:
+    background-color 260ms ease,
+    transform 320ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Lifts toward the pointer rather than changing shape. Transform only, so it
+   composites without touching layout. */
+.cta-solid:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-brass) 82%,
+    var(--color-bone)
+  );
+  transform: translateY(-3px) scale(1.025);
+}
+
+.cta-solid:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* The halo: one ring that expands out of the button's edge and fades.
+ *
+ * Transform and opacity only, on its own element behind the box, so it runs on
+ * the GPU and never repaints either the button or the photograph underneath it.
+ * A static box on a photograph loses to the photograph — this is what carries
+ * the eye to the button without putting a single pixel of furniture over the
+ * picture.
+ *
+ * The ring sits entirely outside the button's own box, so it never draws over
+ * the fill or the label.
+ */
+@keyframes cta-breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.14);
+    opacity: 0;
+  }
+}
+
+.cta-halo {
+  animation: cta-breathe 3.8s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+}
+
+/* The landing page's one action, and deliberately the quiet one.
+ *
+ * ENTER is a threshold, not an offer: it leads to a crossroads where the visitor
+ * chooses between the public work and the private archive, and nothing is being
+ * asked of them yet. So it is a hairline and a wash rather than a filled block —
+ * present, and unmissable as the only interactive thing on the screen, but not
+ * shouting at someone who has been on the page for two seconds.
+ *
+ * The wash is ink at a fifth with a small blur under it, which is what lets the
+ * type stay legible whether the frame behind it is bright sky or dark interior
+ * without laying a scrim over the footage. Same trick as the gate's scrim, same
+ * `@supports` fallback below, and for the same audience.
+ */
+.cta-quiet {
+  background-color: color-mix(in srgb, var(--color-ink) 20%, transparent);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  border: 1.5px solid color-mix(in srgb, var(--color-paper) 72%, transparent);
+  box-shadow: 0 2px 18px color-mix(in srgb, #000 26%, transparent);
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease,
+    transform 320ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.cta-quiet:hover {
+  background-color: color-mix(in srgb, var(--color-paper) 16%, transparent);
+  border-color: var(--color-paper);
+  transform: translateY(-2px);
+}
+
+.cta-quiet:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Without `backdrop-filter` the wash carries legibility on its own, so it goes
+   up. Old Android WebViews — Instagram's in-app browser on a cheap phone — are
+   exactly the case. */
+@supports not (
+  (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))
+) {
+  .cta-quiet {
+    background-color: color-mix(in srgb, var(--color-ink) 52%, transparent);
+  }
+}
+
+/* The crossroads cards.
+ *
+ * The still sits under a wash that lifts as the card is pointed at or focused,
+ * so the photograph answers first and the label second. Transform and opacity
+ * only — the image is never re-rasterised.
+ *
+ * The wash is what makes paper type legible over an unknown part of a
+ * photograph. It is not optional decoration: without it the blurb at the foot of
+ * each card is at the mercy of whatever happens to be behind it.
+ */
+.branch-still {
+  transition: transform 900ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.branch-veil {
+  opacity: 0.46;
+  transition: opacity 520ms ease;
+}
+
+.branch-card:hover .branch-still,
+.branch-card:focus-visible .branch-still {
+  transform: scale(1.04);
+}
+
+.branch-card:hover .branch-veil,
+.branch-card:focus-visible .branch-veil {
+  opacity: 0.26;
+}
+
+/* Reduced motion loses every travel and keeps every fade — a cross-fade is what
+   the preference is least likely to be asking about, and the halo still reads as
+   emphasis standing still. */
+@media (prefers-reduced-motion: reduce) {
+  .cta-halo {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .cta-solid:hover,
+  .cta-solid:active,
+  .cta-quiet:hover,
+  .cta-quiet:active {
+    transform: none;
+  }
+
+  .branch-card:hover .branch-still,
+  .branch-card:focus-visible .branch-still {
+    transform: none;
   }
 }

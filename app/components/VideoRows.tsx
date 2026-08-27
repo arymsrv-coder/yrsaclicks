@@ -19,12 +19,12 @@ type Playing = { clip: Clip; kind: Kind };
  * drive the same `scrollLeft` a finger does, so they are a convenience over the
  * scroller rather than the only way through it.
  *
- * The rows sit on a route of their own, which scrolls natively. They were
- * briefly on the landing page, inside a Lenis container, and needed fencing off
- * from it so a sideways gesture reached the row rather than the page. That
- * subsystem is gone — the landing page is one screen now and nothing on this
- * site smooths scrolling — so the fencing went with it and the rows are back to
- * plain overflow, which is what makes a thumb-swipe work with no code at all.
+ * These rows sit on `/field`, which scrolls like an ordinary document — no
+ * Lenis, no pinned plates, nothing claiming wheel and touch above them. That is
+ * why there is no `data-lenis-prevent-horizontal` on the scrollers here and no
+ * smooth-scroll instance for the player to pause: on this page the browser is
+ * the only thing scrolling, and `overflow: hidden` on `body` is enough to hold
+ * it still. The sibling landing page needs both; this one needs neither.
  */
 export default function VideoRows({
   shorts,
@@ -57,7 +57,7 @@ export default function VideoRows({
       )}
 
       {shorts.length > 0 && videos.length > 0 && (
-        <hr className="my-9 h-px border-0 bg-[color-mix(in_srgb,var(--color-ink)_18%,transparent)]" />
+        <hr className="my-9 h-px border-0 bg-[color-mix(in_srgb,var(--color-paper)_18%,transparent)]" />
       )}
 
       {videos.length > 0 && (
@@ -195,7 +195,7 @@ function Chevron({
       // still be reliably hittable with a thumb. The chevron itself stays at
       // 20 — what grew is the box around it, so the row's furniture reads
       // exactly as quietly as before and is simply easier to hit.
-      className="grid h-11 w-11 place-items-center rounded-full text-[var(--color-ink)] transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-20 hover:opacity-60"
+      className="grid h-11 w-11 place-items-center rounded-full text-[var(--color-paper)] transition-opacity duration-200 disabled:pointer-events-none disabled:opacity-20 hover:opacity-60"
     >
       <svg
         viewBox="0 0 24 24"
@@ -227,10 +227,14 @@ function Tile({
 
   const frame = (
     <>
-      {/* A hairline, because the ground is paper: a pale frame with no edge
-          bleeds into the page and stops reading as a picture. */}
+      {/* A hairline, because a thumbnail needs an edge to read as a picture
+          rather than as a hole in the page. On `/field` the ground is ink, not
+          paper, so the frame is drawn in paper — and a little stronger than the
+          sibling page draws it. A pale line at 14% reads clearly against paper;
+          the same weight against ink is under the threshold where an edge is
+          visible at all, which is the same failure the other way round. */}
       <div
-        className={`relative overflow-hidden rounded-[3px] border border-[color-mix(in_srgb,var(--color-ink)_14%,transparent)] bg-[color-mix(in_srgb,var(--color-ink)_8%,transparent)] ${
+        className={`relative overflow-hidden rounded-[3px] border border-[color-mix(in_srgb,var(--color-paper)_22%,transparent)] bg-[color-mix(in_srgb,var(--color-paper)_8%,transparent)] ${
           short ? "aspect-[9/16]" : "aspect-video"
         }`}
       >
@@ -250,7 +254,7 @@ function Tile({
         )}
       </div>
 
-      <p className="mt-2 font-[family-name:var(--font-body)] text-[12px] md:text-[13px] font-medium leading-[1.35] text-[var(--color-ink)] group-hover:underline">
+      <p className="mt-2 font-[family-name:var(--font-body)] text-[12px] md:text-[13px] font-medium leading-[1.35] text-[var(--color-paper)] group-hover:underline">
         {clip.title}
       </p>
     </>
@@ -315,7 +319,10 @@ function Player({
   useEffect(() => {
     closeButton.current?.focus();
 
-    // This route scrolls natively, so `overflow` is the whole of the lock.
+    // Hold the page behind the veil. `/field` is a natively scrolling document,
+    // so stopping `body` is the whole of it — there is no smooth-scroll loop
+    // running against a wrapper of its own that would carry on underneath
+    // regardless of what `body` says.
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 

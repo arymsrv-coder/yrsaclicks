@@ -1,5 +1,5 @@
 /**
- * Guards `/watch`: the two rows, and the one decision the page's usability
+ * Guards `/field`: the two rows, and the one decision the page's usability
  * rests on — that no YouTube player exists until a tile is clicked.
  *
  * Two modes, because the committed snapshot can legitimately be empty (it was
@@ -247,9 +247,8 @@ try {
     if (!r.url().startsWith(`http://localhost:${PORT}`)) offsite.push(r.url());
   });
 
-  // Back on a route of their own: the landing page is one screen again, and
-  // the scroll subsystem the rows briefly lived inside is gone.
-  await page.goto(`http://localhost:${PORT}/watch/`, { waitUntil: "load" });
+  // `/field` is where the rows live: a `PageShell` route, reached from `/work`.
+  await page.goto(`http://localhost:${PORT}/field/`, { waitUntil: "load" });
 
   const channel = page.locator("main");
   // A tile is a button when there is a video behind it and a link when it is a
@@ -257,7 +256,7 @@ try {
   const tiles = channel.locator("button:has(img), a:has(img)");
   const tileCount = await tiles.count();
 
-  check("the /watch route is served", (await channel.count()) === 1);
+  check("the /field route is served", (await channel.count()) === 1);
   check(
     "no player iframe exists before a click",
     (await page.locator("iframe").count()) === 0,
@@ -357,12 +356,12 @@ try {
   );
 
   // A route nothing links to is a route nobody reaches. The landing page is one
-  // screen by design, so the way in is the quiet nav both legitimacy pages
-  // carry — which is the thing that would silently rot if either were edited.
-  await page.goto(`http://localhost:${PORT}/about/`, { waitUntil: "load" });
+  // screen by design, so the way in is `/work` — the hop that would silently
+  // rot if that page were ever restructured.
+  await page.goto(`http://localhost:${PORT}/work/`, { waitUntil: "load" });
   check(
     "the channel is reachable from the site",
-    (await page.locator('a[href$="/watch/"], a[href$="/watch"]').count()) >= 1,
+    (await page.locator('a[href$="/field/"], a[href$="/field"]').count()) >= 1,
   );
 } catch (error) {
   check("the run completes without throwing", false, error.message);

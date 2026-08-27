@@ -85,41 +85,51 @@ export default function Hero({
           mark at the top and clear of the middle of the frame, where the footage
           actually is. `bottom-[8dvh]` is a unit the `@supports` block in
           globals.css already covers. */}
+      {/* The way in, over the footage and visible from the first frame the hero
+          owns the screen — no scrolling, nothing to find.
+
+          Lower-centre rather than dead centre: clear of the mark at the top and
+          clear of the middle of the frame, where the footage actually is.
+          `bottom-[8dvh]` is a unit the `@supports` block in globals.css already
+          covers. */}
       <motion.div
         className="pointer-events-none absolute inset-x-0 bottom-[8dvh] z-10 flex justify-center px-6"
         initial={{ opacity: 0, y: 14 }}
         animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-        // The header's arrival curve and a comparable delay, so the button lands
+        // The mark's arrival curve and a comparable delay, so the button lands
         // with the page rather than fading in over a page that already arrived.
         transition={{ duration: 0.9, ease: EASE_OUT, delay: ready ? 0.6 : 0 }}
       >
         <Link
-          href="/members"
-          // The plate's CTA treatment, carried over intact from the scroll
-          // section this replaced. A filled button, not an outline: the outlined
-          // version was legible only once you found it — it read as a border
-          // drawn over a photo until you hovered, and on touch there is no hover
-          // at all. Solid ink carries its own contrast against the footage, so it
-          // reads as a button before anything is pointed at it.
+          href="/work"
+          // A threshold, not an offer. This used to be a filled brass block
+          // labelled "Members" that went straight at the gate; it now opens onto
+          // a crossroads where the visitor picks between the public work and the
+          // private archive, and nothing is being asked of them yet. So it is a
+          // hairline and a wash — the only interactive thing on the screen, and
+          // therefore unmissable without having to shout.
           //
-          // Radius is deliberately small — softened, not round. The bone outline
-          // is what lifts the fill off the photograph. The padding is not a round
-          // number because the box was scaled 1.04 on both axes and the 2px
-          // border does not scale with it — 2.08px is not something a screen can
-          // draw — so the padding absorbs that remainder for the outer box to
-          // land where it was measured. Type scales with the box, so the label
-          // grows with the button instead of drifting inside it.
+          // The weight it used to carry moved to the archive's own button, which
+          // is where the decision actually happens now.
           //
           // `next/link`, which applies `basePath` itself — this must not go
           // through `asset()`.
-          className="pointer-events-auto inline-block rounded-[6px] border-2 border-[var(--color-bone)] bg-[var(--color-ink)] px-[25.4px] py-[14.9px] font-[family-name:var(--font-body)] text-[18.5px] md:text-[15.6px] font-extrabold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-colors duration-300 hover:bg-[var(--color-brass)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-bone)]"
+          // Half again the size it was. It is the only interactive thing on the
+          // screen and it sits at the foot of a full-bleed film, where the old
+          // 56px box read as a caption rather than as the way in — small enough
+          // that on a phone held at arm's length it was competing with the
+          // footage for attention it should simply have had. The hairline and
+          // the wash are unchanged: what grew is the target, not the volume.
+          className="cta-quiet pointer-events-auto relative inline-flex min-h-[76px] items-center justify-center rounded-[6px] px-[76px] py-[22px] md:px-[96px] md:py-[24px] font-[family-name:var(--font-body)] text-[19px] md:text-[22px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
           style={{
-            // Static, not animated — a box-shadow keyframe would repaint on the
-            // main thread every frame.
-            boxShadow: "0 2px 12px color-mix(in srgb, #000 22%, transparent)",
+            // The footage runs from bright sky to dark interior, so the wash
+            // behind the type cannot be relied on alone at every frame.
+            textShadow: "0 1px 8px rgba(0,0,0,0.45)",
           }}
         >
-          Members
+          {/* The tracking opens the word out; the trailing letter-space it adds
+              would otherwise push the label off-centre inside the box. */}
+          <span className="-mr-[0.34em]">Enter</span>
         </Link>
       </motion.div>
     </section>
