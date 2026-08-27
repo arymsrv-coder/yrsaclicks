@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "youtube": "node scripts/fetch-youtube.mjs"
+    "youtube": "node scripts/fetch-youtube.mjs",
+    "test:watch": "node tests/watch.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.0.0",

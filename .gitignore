@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Local Claude Code settings — machine-specific, not shared.
+.claude/settings.local.json
+.claude/launch.json
 # Client source material — kept locally, never published.
 #
 # ~198MB of unpublished photography, the client brief, and internal notes were

@@ -20,9 +20,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      # `node-version` is the Node this project builds on, and is not what the
+      # runner's Node 20 notice was about — that one is the runtime the actions
+      # themselves declare, which is why the pinned versions moved and this
+      # number did not.
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -31,17 +35,50 @@ jobs:
 
       - run: npm run build
         env:
-          # Pages serves this repo from /yrsaclicks/, so every URL the site
+          # Pages serves a project repo from /<repo>/, so every URL the site
           # writes needs that prefix. Read by next.config.ts and app/lib/asset.ts.
-          NEXT_PUBLIC_BASE_PATH: /yrsaclicks
+          #
+          # Taken from the repository rather than written down. It was
+          # hardcoded to /yrsaclicks, which was correct for exactly one
+          # repository — pushed to another it would have built a site whose
+          # every script, stylesheet and photograph pointed at a path the host
+          # does not serve. Nothing would have failed loudly; the deploy would
+          # have gone green and the page would have come up blank.
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+
+          # Refreshes the channel snapshot as part of the deploy, so the
+          # landing page's channel rows pick up new uploads without a commit. Read by the `prebuild`
+          # script, never by the browser — the key stays on the runner and
+          # only the fetched JSON and thumbnails reach the artifact.
+          #
+          # Optional. An unset secret is an empty string, which the script
+          # treats exactly as no key: it logs a line, leaves the committed
+          # snapshot alone and exits zero, so a fork with no secret still
+          # deploys.
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
       # Without this, Pages runs the output through Jekyll, which drops
       # `_next/` — every script and stylesheet 404s.
       - run: touch out/.nojekyll
 
-      - uses: actions/configure-pages@v5
+      # Pages has to already exist on the repository for this step to find it.
+      # A repository that has never had it fails here with "Get Pages site
+      # failed / Not Found", and the `enablement: true` option that is supposed
+      # to fix that cannot: creating a Pages site is beyond what the default
+      # `GITHUB_TOKEN` may do, so it swaps the error for "Resource not
+      # accessible by integration" and fails just the same.
+      #
+      # So the first deploy to a new repository needs one manual step —
+      # Settings -> Pages -> Source: GitHub Actions, or
+      # `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow`.
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      # Moves as a pair with `deploy-pages` below — the upload writes the
+      # artifact the deploy consumes, and the two majors are released together.
+      # Held back one run behind the others on purpose, so that if the artifact
+      # format had been the thing to break it would have broken on its own and
+      # against a deploy already known to be green.
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: out
 
@@ -53,4 +90,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
