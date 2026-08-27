@@ -48,7 +48,7 @@ export default function Header({ ready = true }: { ready?: boolean }) {
           <Link
             href="/"
             aria-label="yrsaclicks — home"
-            className="block cursor-pointer opacity-100 transition-opacity duration-200 hover:opacity-60"
+            className="group block cursor-pointer"
           >
             {/* The handwritten mark is nearly four times as wide as it is tall,
                 so a given width buys far less height than a wordmark would — at
@@ -58,7 +58,7 @@ export default function Header({ ready = true }: { ready?: boolean }) {
                 than a label pinned to the corner of it. */}
             <Logo
               variant="invert"
-              className="w-[210px] md:w-[290px] lg:w-[340px]"
+              className="w-[210px] transition-opacity duration-200 group-hover:opacity-80 md:w-[290px] lg:w-[340px]"
             />
           </Link>
         </motion.span>

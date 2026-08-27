@@ -114,13 +114,18 @@ export default function Hero({
           //
           // `next/link`, which applies `basePath` itself — this must not go
           // through `asset()`.
-          // Half again the size it was. It is the only interactive thing on the
-          // screen and it sits at the foot of a full-bleed film, where the old
-          // 56px box read as a caption rather than as the way in — small enough
-          // that on a phone held at arm's length it was competing with the
-          // footage for attention it should simply have had. The hairline and
-          // the wash are unchanged: what grew is the target, not the volume.
-          className="cta-quiet pointer-events-auto relative inline-flex min-h-[76px] items-center justify-center rounded-[6px] px-[76px] py-[22px] md:px-[96px] md:py-[24px] font-[family-name:var(--font-body)] text-[19px] md:text-[22px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
+          // Grown twice now, from the 56px box this started as. It is the only
+          // interactive thing on the screen and it sits at the foot of a
+          // full-bleed film, where anything smaller reads as a caption rather
+          // than as the way in — on a phone held at arm's length it was
+          // competing with the footage for attention it should simply have had.
+          // On a phone it takes the whole measure the gutters allow rather than
+          // sizing to its own label: there is nothing beside it to share the row
+          // with, and full width is the largest thumb target the layout can
+          // offer. Padding it to that width instead would have to be tuned for
+          // the narrowest screen and would come out *smaller* on every other
+          // one. From `sm` up there is room to size to the label, so it does.
+          className="cta-quiet pointer-events-auto relative inline-flex min-h-[92px] w-full max-w-[420px] items-center justify-center rounded-[6px] py-[26px] sm:w-auto sm:max-w-full sm:px-[92px] md:px-[116px] md:py-[30px] font-[family-name:var(--font-body)] text-[22px] md:text-[26px] font-semibold uppercase tracking-[0.34em] text-[var(--color-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-[var(--color-bone)]"
           style={{
             // The footage runs from bright sky to dark interior, so the wash
             // behind the type cannot be relied on alone at every frame.

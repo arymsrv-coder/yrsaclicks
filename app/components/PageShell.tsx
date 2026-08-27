@@ -43,7 +43,7 @@ export default function PageShell({
           // The mark is 33px tall at this width by its own aspect ratio, which
           // is under the 44px floor on its own — the padding is what carries the
           // target, not a larger logo.
-          className="flex min-h-[44px] cursor-pointer items-center transition-opacity duration-200 hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+          className="group flex min-h-[44px] cursor-pointer items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
         >
           {/* Flat ink is a single known colour, so the inversion is a single
               known colour too — #2e3b31 comes back as a pale mauve. Nothing to
@@ -51,7 +51,7 @@ export default function PageShell({
               the contrast push and the edge are both switched off. */}
           <Logo
             variant="invert"
-            className="w-[130px] [--logo-contrast:1] [--logo-edge:0] md:w-[180px]"
+            className="w-[130px] [--logo-contrast:1] [--logo-edge:0] transition-opacity duration-200 group-hover:opacity-80 md:w-[180px]"
           />
         </Link>
       </div>
