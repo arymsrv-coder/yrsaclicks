@@ -112,7 +112,7 @@ export default function MembersPage() {
             <Link
               href="/"
               aria-label="yrsaclicks — back to the landing page"
-              className="flex min-h-[44px] cursor-pointer items-center transition-opacity duration-200 hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              className="group flex min-h-[44px] cursor-pointer items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
               // ⚠️ The `drop-shadow` that used to sit here is gone, and must not
               // come back. A filtered ancestor is a backdrop root, and the
               // inverting mark below would sample an empty backdrop and paint
@@ -125,7 +125,7 @@ export default function MembersPage() {
                   needs no such help, so this is back on the defaults. */}
               <Logo
                 variant="invert"
-                className="w-[150px] md:w-[200px]"
+                className="w-[150px] transition-opacity duration-200 group-hover:opacity-80 md:w-[200px]"
               />
             </Link>
           </div>
